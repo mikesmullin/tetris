@@ -12,9 +12,11 @@ All commands are executed via the `tetris` CLI tool:
 
 | Command | Description |
 |---------|-------------|
-| `./tetris show` | Display current game state (no state change) |
+| `./tetris show` | Display current game state |
 | `./tetris next` | Advance one frame (gravity moves piece down) |
 | `./tetris press <key>` | Perform an action |
+
+**Important:** The `press` and `next` commands produce no output. You must call `show` to see the current game state.
 
 ### Keys for `press` command
 
@@ -23,33 +25,34 @@ All commands are executed via the `tetris` CLI tool:
 | `a` | `left` | Move piece left by 1 cell |
 | `d` | `right` | Move piece right by 1 cell |
 | `w` | `up` | Rotate piece 90° clockwise |
-| `s` | `down` | Hard drop (instantly drop piece to bottom) |
+| `s` | `down` | Soft drop (move piece down 1 row) |
+| `space` | `drop` | Hard drop (instantly drop piece to bottom) |
 | `q` | `reset` | Start a new game |
 
 ## Understanding the Display
 
 ```
-┌─────────────────────┐ ┌──Stats───┐
-│ . . . . . . . . . . │ │ Score  0 │
-│ . . . .██ . . . . . │ │ Level  1 │
-│ . . .████ . . . . . │ └──────────┘
-│ . . .██ . . . . . . │ 
-│ . . . . . . . . . . │ ┌──Next────┐
-│ . . . . . . . . . . │ │  . . . . │
-│ . . . . . . . . . . │ │  .████ . │
-│ . . . . . . . . . . │ │  .████ . │
-│ . . . . . . . . . . │ │  . . . . │
-│ . . . . . . . . . . │ └──────────┘
-│ . . . . . . . . . . │ 
-│ . . . . . . . . . . │ ┌──Help────┐
-│ . . . . . . . . . . │ │ Start!   │
-│ . . . . . . . . . . │ │          │
-│ . . . . . . . . . . │ │ Left   a │
-│ . . . . . . . . . . │ │ Right  d │
-│ . . . . . . . . . . │ │ Rotate w │
-│ . . . . . . . . . . │ │ Drop   s │
-│ . . . . . . . . . . │ │ Reset  q │
-│ . . . . . . . . . . │ └──────────┘
+┌─────────────────────┐ ┌──Stats───────┐
+│ . . . .██ . . . . . │ │ Score      0 │
+│ . . .████ . . . . . │ │ Level      1 │
+│ . . .██ . . . . . . │ │ Lines   0/10 │
+│ . . . . . . . . . . │ └──────────────┘
+│ . . . . . . . . . . │ ┌──Next────────┐
+│ . . . . . . . . . . │ │   .██ . .    │
+│ . . . . . . . . . . │ │   .██ . .    │
+│ . . . . . . . . . . │ │   .██ . .    │
+│ . . . . . . . . . . │ │   .██ . .    │
+│ . . . . . . . . . . │ └──────────────┘
+│ . . . . . . . . . . │ ┌──Help────────┐
+│ . . . . . . . . . . │ │              │
+│ . . . . . . . . . . │ │              │
+│ . . . . . . . . . . │ │ Left       a │
+│ . . . . . . . . . . │ │ Right      d │
+│ . . . . . . . . . . │ │ Rotate     w │
+│ . . . . . . . . . . │ │ Down       s │
+│ . . . .██ . . . . . │ │ Drop      sp │
+│ .██ . .██ . . . . . │ │ Reset      q │
+│██████ .████ . . . . │ └──────────────┘
 └─────────────────────┘ 
 ```
 
@@ -63,16 +66,16 @@ All commands are executed via the `tetris` CLI tool:
 
 ### Side Panels
 
-- **Stats**: Current score and level
+- **Stats**: Current score, level, and lines progress (X/10 toward next level)
 - **Next**: Preview of the next piece that will spawn
 - **Help**: Shows current message and controls
 
 ### Messages
 
 The Help panel displays status messages:
-- `Start!` - Game just started
-- `GameOver` - Game has ended (pieces reached top)
-- `Level Up` - Level increased
+- `Start!` - Game just started (first frame only)
+- `Game Over!` - Game has ended (pieces reached top)
+- `Level Up!` - Level increased
 - Empty when no message
 
 ## Piece Types (Tetrominoes)
@@ -90,6 +93,10 @@ There are 7 piece types, each with a distinct color and shape:
 | L | Orange | L-shape |
 
 Each piece can be rotated 4 times (0°, 90°, 180°, 270°).
+
+### 7-Bag Randomizer
+
+The game uses a 7-bag randomizer: all 7 pieces appear exactly once before any piece repeats. This prevents long droughts of needed pieces and makes the game more predictable for strategic planning.
 
 ## Game Mechanics
 
@@ -115,8 +122,12 @@ Each piece can be rotated 4 times (0°, 90°, 180°, 270°).
 - If the piece cannot move down, it locks in place
 - After locking, completed lines are cleared and a new piece spawns
 
+### Soft Drop
+- The `s`/`down` command moves the piece down by 1 row
+- Does NOT lock the piece if it reaches bottom (use for precise positioning)
+
 ### Hard Drop
-- The `down`/`s` command instantly drops the piece to the lowest valid position
+- The `space`/`drop` command instantly drops the piece to the lowest valid position
 - The piece locks immediately after a hard drop
 
 ### Line Clearing
@@ -136,6 +147,7 @@ Each piece can be rotated 4 times (0°, 90°, 180°, 270°).
 ### Leveling
 - Every 10 lines cleared increases the level by 1
 - Higher levels award more points per line clear
+- The `Lines X/10` display shows progress toward next level
 
 ## Strategy Tips for AI Agents
 
@@ -144,7 +156,8 @@ Each piece can be rotated 4 times (0°, 90°, 180°, 270°).
 3. **Clear lines efficiently**: Aim for Tetrises (4 lines at once) for maximum points
 4. **Avoid blocking columns**: Don't leave gaps that are hard to fill
 5. **Use rotations wisely**: Some pieces fit better after rotation
-6. **Hard drop for speed**: Use `s` when placement is certain
+6. **Soft drop for precision**: Use `s` to position, then `space` to lock
+7. **Leverage the 7-bag**: You know all 7 pieces will appear in each bag
 
 ## Example Play Session
 
@@ -152,23 +165,37 @@ Each piece can be rotated 4 times (0°, 90°, 180°, 270°).
 # Start a new game
 ./tetris press q
 
-# See the initial state
+# See the initial state (shows "Start!" message)
 ./tetris show
 
-# Move piece left
+# Move piece left, rotate, soft drop to position
 ./tetris press a
-
-# Rotate piece
 ./tetris press w
-
-# Hard drop to place piece
+./tetris press s
 ./tetris press s
 
-# Advance frame (see next piece fall)
-./tetris next
+# Hard drop to lock the piece
+./tetris press space
+
+# See the result
+./tetris show
 
 # Continue playing...
 ```
+
+## Efficient Play (Preserving Context)
+
+Since `press` and `next` don't output anything, you can chain multiple moves and only call `show` when needed:
+
+```bash
+# Chain multiple moves silently
+./tetris press a && ./tetris press a && ./tetris press w && ./tetris press space
+
+# Then view the result
+./tetris show
+```
+
+This preserves LLM context by reducing output verbosity.
 
 ## Game State Persistence
 
@@ -196,7 +223,7 @@ The current falling piece is rendered on the board. To find it:
 
 There is no "win" condition - the goal is to maximize score. The game ends when:
 - A new piece cannot spawn (board too full)
-- The `GameOver` message appears in the Help panel
+- The `Game Over!` message appears in the Help panel
 
 To achieve high scores:
 1. Survive as long as possible

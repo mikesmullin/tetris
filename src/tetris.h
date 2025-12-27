@@ -139,6 +139,10 @@ typedef struct {
   
   // Frame counter
   u32 frame;
+  
+  // 7-bag randomizer state
+  u8 bag[NUM_PIECES];  // Shuffled bag of pieces
+  u8 bag_index;        // Next piece index in bag (0-6, 7 = need refill)
 } GameState;
 
 // ---

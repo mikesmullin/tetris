@@ -32,7 +32,8 @@ static void Main__usage(void) {
   printf("  a, left        Move piece left\n");
   printf("  d, right       Move piece right\n");
   printf("  w, up          Rotate piece clockwise\n");
-  printf("  s, down        Hard drop piece\n");
+  printf("  s, down        Soft drop (move down 1 row)\n");
+  printf("  space, drop    Hard drop (instant drop to bottom)\n");
   printf("  q, reset       Reset game (new game)\n");
   printf("\n");
   printf("Environment:\n");
@@ -50,7 +51,10 @@ static s8 Main__cmd_next(GameState* state) {
   if (!state->game_over) {
     Game__tick(state);
   }
-  Render__frame(state);
+  // Clear start message (we're past first frame)
+  if (state->message == MSG_START) {
+    state->message = MSG_NONE;
+  }
   return 0;
 }
 
@@ -64,6 +68,7 @@ static s8 Main__cmd_press(GameState* state, const char* key) {
   
   // Match key
   bool handled = false;
+  bool is_reset = false;
   
   // Single character keys
   if (key[1] == '\0') {
@@ -81,13 +86,14 @@ static s8 Main__cmd_press(GameState* state, const char* key) {
         handled = true;
         break;
       case 's':
-        Game__drop(state);
+        Game__soft_drop(state);
         handled = true;
         break;
       case 'q':
         Game__reset(state);
         Game__spawn_piece(state);
         handled = true;
+        is_reset = true;
         break;
     }
   }
@@ -104,22 +110,30 @@ static s8 Main__cmd_press(GameState* state, const char* key) {
       Game__rotate(state);
       handled = true;
     } else if (strcmp(key, "down") == 0) {
+      Game__soft_drop(state);
+      handled = true;
+    } else if (strcmp(key, "space") == 0 || strcmp(key, "drop") == 0) {
       Game__drop(state);
       handled = true;
     } else if (strcmp(key, "reset") == 0) {
       Game__reset(state);
       Game__spawn_piece(state);
       handled = true;
+      is_reset = true;
     }
   }
   
   if (!handled) {
     fprintf(stderr, "Error: Unknown key '%s'\n", key);
-    fprintf(stderr, "Valid keys: a/left, d/right, w/up, s/down, q/reset\n");
+    fprintf(stderr, "Valid keys: a/left, d/right, w/up, s/down, space/drop, q/reset\n");
     return -1;
   }
   
-  Render__frame(state);
+  // Clear start message after first input (but not on reset)
+  if (state->message == MSG_START && !is_reset) {
+    state->message = MSG_NONE;
+  }
+  
   return 0;
 }
 

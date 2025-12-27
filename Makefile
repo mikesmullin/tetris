@@ -2,11 +2,11 @@
 # Portable C99 implementation
 
 CC = clang
-CFLAGS = -std=c99 -O2 -Wall -Wextra -pedantic -Wno-unused-function
+CFLAGS = -std=c99 -O2 -Wall -Wextra -pedantic
 LDFLAGS =
 
 # Debug build flags
-DEBUG_CFLAGS = -std=c99 -O0 -g -Wall -Wextra -pedantic -Wno-unused-function -DDEBUG_SLOW
+DEBUG_CFLAGS = -std=c99 -O0 -g -Wall -Wextra -pedantic -DDEBUG_SLOW
 
 SRC = src/main.c
 TARGET = tetris

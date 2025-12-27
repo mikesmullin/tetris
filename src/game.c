@@ -11,7 +11,8 @@
 // Game__init(state) | Initialize game state for new game
 // Game__reset(state) | Reset game to initial state (new game)
 // Game__random(state) | Generate next random number using LCG
-// Game__random_piece(state) | Get random piece kind
+// Game__shuffle_bag(state) | Shuffle the 7-bag for piece randomization
+// Game__next_piece_from_bag(state) | Get next piece from 7-bag
 // Game__spawn_piece(state) | Spawn a new piece at top of board
 // Game__check_collision(state, x, y, rotation) | Check if piece would collide at position
 // Game__lock_piece(state) | Lock current piece into board
@@ -19,6 +20,7 @@
 // Game__move_left(state) | Move piece left if possible
 // Game__move_right(state) | Move piece right if possible
 // Game__rotate(state) | Rotate piece clockwise if possible
+// Game__soft_drop(state) | Soft drop piece down by 1 row
 // Game__drop(state) | Hard drop piece to bottom
 // Game__tick(state) | Apply gravity (move piece down one row)
 
@@ -29,9 +31,32 @@ static u32 Game__random(GameState* state) {
   return (state->seed >> 16) & 0x7FFF;
 }
 
-// Get random piece kind
-static PieceKind Game__random_piece(GameState* state) {
-  return (PieceKind)(Game__random(state) % NUM_PIECES);
+// Shuffle the 7-bag using Fisher-Yates algorithm
+static void Game__shuffle_bag(GameState* state) {
+  // Fill bag with all 7 pieces
+  for (u8 i = 0; i < NUM_PIECES; i++) {
+    state->bag[i] = i;
+  }
+  
+  // Fisher-Yates shuffle
+  for (u8 i = NUM_PIECES - 1; i > 0; i--) {
+    u8 j = (u8)(Game__random(state) % (i + 1));
+    u8 tmp = state->bag[i];
+    state->bag[i] = state->bag[j];
+    state->bag[j] = tmp;
+  }
+  
+  state->bag_index = 0;
+}
+
+// Get next piece from 7-bag
+static PieceKind Game__next_piece_from_bag(GameState* state) {
+  // Refill bag if exhausted
+  if (state->bag_index >= NUM_PIECES) {
+    Game__shuffle_bag(state);
+  }
+  
+  return (PieceKind)state->bag[state->bag_index++];
 }
 
 // Initialize game state for new game
@@ -48,8 +73,9 @@ static void Game__init(GameState* state) {
   // Set initial level
   state->level = 1;
   
-  // Generate first two pieces
-  state->next_piece = Game__random_piece(state);
+  // Initialize 7-bag and generate first piece
+  Game__shuffle_bag(state);
+  state->next_piece = Game__next_piece_from_bag(state);
   
   // Mark as started
   state->game_started = true;
@@ -106,11 +132,21 @@ static bool Game__spawn_piece(GameState* state) {
   // Set current piece to next
   state->current.kind = state->next_piece;
   state->current.rotation = 0;
-  state->current.x = (BOARD_WIDTH - PIECE_SIZE) / 2;  // Center horizontally
-  state->current.y = 0;  // Start at top
   
-  // Generate next piece
-  state->next_piece = Game__random_piece(state);
+  // Center horizontally (I and O pieces spawn centered differently)
+  if (state->current.kind == PIECE_I) {
+    state->current.x = (BOARD_WIDTH - PIECE_SIZE) / 2;
+    state->current.y = -1;  // Start 1 row above to show 4th row of I-piece
+  } else if (state->current.kind == PIECE_O) {
+    state->current.x = (BOARD_WIDTH - 2) / 2;  // O is 2 wide, center it
+    state->current.y = 0;
+  } else {
+    state->current.x = (BOARD_WIDTH - PIECE_SIZE) / 2;
+    state->current.y = 0;
+  }
+  
+  // Generate next piece from 7-bag
+  state->next_piece = Game__next_piece_from_bag(state);
   
   // Check if spawn position is valid
   if (Game__check_collision(state, state->current.x, state->current.y, state->current.rotation)) {
@@ -267,6 +303,22 @@ static bool Game__rotate(GameState* state) {
   if (!Game__check_collision(state, state->current.x, state->current.y - 1, new_rotation)) {
     state->current.y--;
     state->current.rotation = new_rotation;
+    return true;
+  }
+  
+  return false;
+}
+
+// Soft drop piece by 1 row
+// Returns true if piece moved, false if it would lock (doesn't lock)
+static bool Game__soft_drop(GameState* state) {
+  if (state->game_over) {
+    return false;
+  }
+  
+  // Check if piece can move down
+  if (!Game__check_collision(state, state->current.x, state->current.y + 1, state->current.rotation)) {
+    state->current.y++;
     return true;
   }
   

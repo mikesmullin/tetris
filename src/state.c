@@ -42,21 +42,6 @@ static s8 State__get_path(char* buf, u32 buf_sz) {
   return 0;
 }
 
-// Check if state file exists
-static bool State__exists(void) {
-  char path[MAX_PATH];
-  if (State__get_path(path, MAX_PATH) != 0) {
-    return false;
-  }
-  
-  FILE* f = fopen(path, "rb");
-  if (f) {
-    fclose(f);
-    return true;
-  }
-  return false;
-}
-
 // Save game state to disk
 // Returns 0 on success, -1 on failure
 static s8 State__save(const GameState* state) {
@@ -141,22 +126,6 @@ static s8 State__load(GameState* state) {
     fprintf(stderr, "Warning: State file version mismatch, starting new game\n");
     Game__init(state);
     Game__spawn_piece(state);
-    return 0;
-  }
-  
-  return 0;
-}
-
-// Delete state file (for reset)
-static s8 State__delete(void) {
-  char path[MAX_PATH];
-  if (State__get_path(path, MAX_PATH) != 0) {
-    return -1;
-  }
-  
-  // Use remove() to delete the file
-  if (remove(path) != 0) {
-    // File might not exist, which is fine
     return 0;
   }
   
