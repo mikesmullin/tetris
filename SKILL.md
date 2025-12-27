@@ -153,11 +153,15 @@ The game uses a 7-bag randomizer: all 7 pieces appear exactly once before any pi
 
 1. **Keep the board flat**: Avoid creating holes or tall towers
 2. **Plan for the next piece**: Use the "Next" preview to plan placement
-3. **Clear lines efficiently**: Aim for Tetrises (4 lines at once) for maximum points
+3. **Clear lines**: Play conservatively, clearing one line at once for steady progress. Aim for Tetrises (4 lines at once) when possible, as they provide maximum points (800 × level) and help maintain a flat board.
 4. **Avoid blocking columns**: Don't leave gaps that are hard to fill
 5. **Use rotations wisely**: Some pieces fit better after rotation
 6. **Soft drop for precision**: Use `s` to position, then `space` to lock
 7. **Leverage the 7-bag**: You know all 7 pieces will appear in each bag
+8. **Fill rows horizontally**: Place pieces side by side in the same row to complete lines, rather than stacking vertically into tall columns.
+9. **Focus on the landing row**: Prioritize filling the current highest incomplete row to clear lines immediately and prevent the stack from rising.
+10. **Maximize score multipliers**: Higher levels multiply points per line clear, so aim to clear lines efficiently to level up quickly. Clearing multiple lines at once (doubles, triples, tetrises) yields exponentially more points than singles.
+11. **Chain commands efficiently**: Use `&&` to combine multiple commands in a single terminal call to reduce tool invocations and preserve context, e.g., `./tetris press a && ./tetris press w && ./tetris press space && ./tetris press show`.
 
 ## Example Play Session
 
