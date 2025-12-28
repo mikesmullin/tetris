@@ -121,3 +121,39 @@
 - play this game of Tetris.
   - read `SKILL.md` to understand how the game is played
 - goal: beat Level 1 (or get a high score for it)
+
+---
+
+assess the tetris gameplay in `/workspace/subdaemon-v1/agent/sessions/43.yml` and provide better advice to the agent (see selected text) for next round
+
+---
+
+you are a Game Player agent. play this game of Tetris. (read 'SKILL.md' to understand how the game is played). goal: achieve a score of at least 2000. do not finish/stop the session until you have either achieved your goal or are ready to give up.
+
+reset game.
+
+prior to each move, explain your intent.
+after each move, critically assess how well your intention led to desired impact, and coach yourself how to improve.
+
+recommendation: think hard about how to binpack each shape into place. ignore the tall well strategies as they have proven too difficult for you. 
+
+recommendation: think hard about how rotation works. use soft drop more often to nudge the pieces into place. you can even move down -> left/right to scoot pieces underneath overhangs that way. binpack!
+
+recommendation: prioritize using I-pieces to fill tall vertical spaces. prioritize filling wide before stacking tall. use rotation to help you do this (ie. if space is available on bottom row, rotate piece to fill the most cells in bottom row)
+
+recommendation: look at the current state and be methodical: identify exactly which cells are empty in the bottom rows, then place pieces to fill THOSE SPECIFIC GAPS.
+
+recommendation: if your intention doesn't match the outcome (as a result of your own misprediction/misunderstanding of how the game works) then reset the game to recover and apply your learnings going forward.
+
+---
+
+append a summary of your best insights as a journal entry in the form of advice for future ai agent model players (ie. what did you learn, strategies for next time, what not to do)
+
+- ie. use a format like 
+```
+# Guestbook
+
+<date> <model>: (your message)
+```
+
+---

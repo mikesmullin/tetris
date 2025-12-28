@@ -40,6 +40,33 @@ static void Main__usage(void) {
   printf("  TETRIS_STATE_FILE  Override state file path (default: ~/.tetris_state)\n");
 }
 
+// Handle 'dump' command
+static s8 Main__cmd_dump(GameState* state) {
+  printf("{\n");
+  printf("  \"score\": %u,\n", state->score);
+  printf("  \"level\": %u,\n", state->level);
+  printf("  \"lines\": %u,\n", state->lines_cleared);
+  printf("  \"game_over\": %s,\n", state->game_over ? "true" : "false");
+  printf("  \"current\": {\n");
+  printf("    \"kind\": %d,\n", state->current.kind);
+  printf("    \"x\": %d,\n", state->current.x);
+  printf("    \"y\": %d,\n", state->current.y);
+  printf("    \"rotation\": %d\n", state->current.rotation);
+  printf("  },\n");
+  printf("  \"next_piece\": %d,\n", state->next_piece);
+  printf("  \"board\": [\n");
+  for (int y = 0; y < BOARD_HEIGHT; y++) {
+    printf("    [");
+    for (int x = 0; x < BOARD_WIDTH; x++) {
+      printf("%d%s", state->board.cells[y][x], x < BOARD_WIDTH - 1 ? ", " : "");
+    }
+    printf("]%s\n", y < BOARD_HEIGHT - 1 ? "," : "");
+  }
+  printf("  ]\n");
+  printf("}\n");
+  return 0;
+}
+
 // Handle 'show' command
 static s8 Main__cmd_show(GameState* state) {
   Render__frame(state);
@@ -112,7 +139,7 @@ static s8 Main__cmd_press(GameState* state, const char* key) {
     } else if (strcmp(key, "down") == 0) {
       Game__soft_drop(state);
       handled = true;
-    } else if (strcmp(key, "space") == 0 || strcmp(key, "drop") == 0) {
+    } else if (strcmp(key, "space") == 0 || strcmp(key, "sp") == 0 || strcmp(key, "drop") == 0) {
       Game__drop(state);
       handled = true;
     } else if (strcmp(key, "reset") == 0) {
@@ -162,6 +189,8 @@ int main(int argc, char* argv[]) {
   // Dispatch command
   if (strcmp(command, "show") == 0) {
     result = Main__cmd_show(&state);
+  } else if (strcmp(command, "dump") == 0) {
+    result = Main__cmd_dump(&state);
   } else if (strcmp(command, "next") == 0) {
     result = Main__cmd_next(&state);
     // Save state after advancing frame
@@ -169,9 +198,15 @@ int main(int argc, char* argv[]) {
       State__save(&state);
     }
   } else if (strcmp(command, "press") == 0) {
-    const char* key = (argc >= 3) ? argv[2] : NULL;
-    result = Main__cmd_press(&state, key);
-    // Save state after key press
+    if (argc < 3) {
+      result = Main__cmd_press(&state, NULL);
+    } else {
+      // Process all keys provided as arguments
+      for (int i = 2; i < argc && result == 0; i++) {
+        result = Main__cmd_press(&state, argv[i]);
+      }
+    }
+    // Save state after key presses
     if (result == 0) {
       State__save(&state);
     }

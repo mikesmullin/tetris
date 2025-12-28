@@ -37,6 +37,9 @@ clang -std=c99 -O2 -o tetris src/main.c -Wall -Wextra -pedantic
 
 # Press a key (movement/action)
 ./tetris press <key>
+
+# Press multiple keys in sequence
+./tetris press <key1> <key2> <key3> ...
 ```
 
 **Note:** The `press` and `next` commands do not output to stdout. Use `show` to display the current game state.
@@ -49,8 +52,20 @@ clang -std=c99 -O2 -o tetris src/main.c -Wall -Wextra -pedantic
 | `d` | `right` | Move piece right |
 | `w` | `up` | Rotate piece clockwise |
 | `s` | `down` | Soft drop (move down 1 row) |
-| `space` | `drop` | Hard drop (instant drop to bottom) |
+| `space` | `sp`, `drop` | Hard drop (instant drop to bottom) |
 | `q` | `reset` | Start new game |
+
+### Multi-Key Input
+
+You can press multiple keys in a single command:
+
+```bash
+# Move left twice, rotate, then hard drop
+./tetris press a a w space
+
+# Soft drop 3 times then move right
+./tetris press s s s d
+```
 
 ## Example Output
 

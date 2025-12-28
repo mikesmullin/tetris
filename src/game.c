@@ -310,7 +310,7 @@ static bool Game__rotate(GameState* state) {
 }
 
 // Soft drop piece by 1 row
-// Returns true if piece moved, false if it would lock (doesn't lock)
+// Returns true if piece moved or locked, false if game over
 static bool Game__soft_drop(GameState* state) {
   if (state->game_over) {
     return false;
@@ -322,7 +322,16 @@ static bool Game__soft_drop(GameState* state) {
     return true;
   }
   
-  return false;
+  // Piece cannot move down, lock it
+  Game__lock_piece(state);
+  
+  // Clear lines
+  Game__clear_lines(state);
+  
+  // Spawn new piece
+  Game__spawn_piece(state);
+  
+  return true;
 }
 
 // Hard drop piece to bottom
