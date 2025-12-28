@@ -97,7 +97,7 @@ static void Render__frame(const GameState* state) {
   
   // --- Board top border + Stats header ---
   printf("%s" BOX_TL, ANSI_WHITE);
-  for (u32 i = 0; i < BOARD_WIDTH * 2 + 1; i++) {
+  for (u32 i = 0; i < BOARD_WIDTH * 2 + 2; i++) {
     printf(BOX_H);
   }
   printf(BOX_TR " " BOX_TL BOX_H BOX_H "Stats" BOX_H BOX_H BOX_H BOX_H BOX_H BOX_H BOX_H BOX_TR "%s\n", ANSI_RESET);
@@ -105,7 +105,7 @@ static void Render__frame(const GameState* state) {
   // --- Board rows ---
   for (s8 row = 0; row < BOARD_HEIGHT; row++) {
     // Left border
-    printf("%s" BOX_V "%s", ANSI_WHITE, ANSI_RESET);
+    printf("%s" BOX_V " %s", ANSI_WHITE, ANSI_RESET);
     
     // Board cells
     for (s8 col = 0; col < BOARD_WIDTH; col++) {
@@ -186,8 +186,8 @@ static void Render__frame(const GameState* state) {
   
   // --- Board bottom border ---
   printf("%s" BOX_BL, ANSI_WHITE);
-  for (u32 i = 0; i < BOARD_WIDTH * 2 + 1; i++) {
+  for (u32 i = 0; i < BOARD_WIDTH * 2 + 2; i++) {
     printf(BOX_H);
   }
-  printf(BOX_BR " %s\n", ANSI_RESET);
+  printf(BOX_BR "\n%s", ANSI_RESET);
 }
